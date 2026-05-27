@@ -11,40 +11,57 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
-private val DarkColorScheme =
-  darkColorScheme(primary = Purple80, secondary = PurpleGrey80, tertiary = Pink80)
+private val DarkColorScheme = darkColorScheme(
+  primary = TaxiYellow,
+  onPrimary = CharcoalDark,
+  primaryContainer = TaxiYellowDark,
+  secondary = CharcoalSurface,
+  onSecondary = PureWhite,
+  tertiary = TaxiAmber,
+  background = CharcoalDark,
+  surface = CharcoalSurface,
+  onBackground = PureWhite,
+  onSurface = PureWhite,
+  error = ErrorRed,
+  onError = PureWhite,
+)
 
-private val LightColorScheme =
-  lightColorScheme(
-    primary = SleekBrandPurple,
-    secondary = SleekPurpleLightBg,
-    tertiary = SleekBlueLightBg,
-    background = SleekBg,
-    surface = SleekBg,
-    onPrimary = Color.White,
-    onSecondary = SleekPurpleDarkText,
-    onTertiary = SleekBlueDarkText,
-    onBackground = SleekTextDark,
-    onSurface = SleekTextDark,
-  )
+private val LightColorScheme = lightColorScheme(
+  primary = TaxiYellow,
+  onPrimary = CharcoalDark,
+  primaryContainer = YellowBg,
+  secondary = CharcoalDark,
+  onSecondary = PureWhite,
+  secondaryContainer = GrayBg,
+  tertiary = TaxiAmber,
+  background = OffWhite,
+  surface = PureWhite,
+  surfaceVariant = WarmGray,
+  onBackground = CharcoalDark,
+  onSurface = CharcoalDark,
+  onSurfaceVariant = SlateGray,
+  outline = BorderLight,
+  outlineVariant = BorderMedium,
+  error = ErrorRed,
+  onError = PureWhite,
+  errorContainer = AlertBg,
+  onErrorContainer = ErrorRed,
+)
 
 @Composable
 fun MyApplicationTheme(
-  darkTheme: Boolean = false, // Set to false by default for light theme Sleek experience
-  // Disable dynamic color so we display our bespoke handcrafted theme
+  darkTheme: Boolean = false,
   dynamicColor: Boolean = false,
   content: @Composable () -> Unit,
 ) {
-  val colorScheme =
-    when {
-      dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-        val context = LocalContext.current
-        if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-      }
-
-      darkTheme -> DarkColorScheme
-      else -> LightColorScheme
+  val colorScheme = when {
+    dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+      val context = LocalContext.current
+      if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
     }
+    darkTheme -> DarkColorScheme
+    else -> LightColorScheme
+  }
 
   MaterialTheme(colorScheme = colorScheme, typography = Typography, content = content)
 }
