@@ -13,12 +13,17 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -27,6 +32,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Build
@@ -45,8 +51,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -62,9 +67,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -78,25 +85,21 @@ import com.example.ui.GLADBACH_PLACES
 import com.example.ui.MoenchengladbachLocation
 import com.example.ui.TaxiViewModel
 import com.example.ui.theme.MyApplicationTheme
-import com.example.ui.theme.OffWhite
-import com.example.ui.theme.CharcoalDark
-import com.example.ui.theme.TaxiYellow
-import com.example.ui.theme.YellowBg
-import com.example.ui.theme.TaxiYellowDark
-import com.example.ui.theme.GrayBg
-import com.example.ui.theme.MapBg
-import com.example.ui.theme.BorderMedium
-import com.example.ui.theme.BorderLight
-import com.example.ui.theme.AlertBg
-import com.example.ui.theme.ErrorRed
-import com.example.ui.theme.AlertBorder
-import com.example.ui.theme.NavBg
-import com.example.ui.theme.YellowBgDark
-import com.example.ui.theme.TaxiAmber
-import com.example.ui.theme.SuccessGreen
-import com.example.ui.theme.CharcoalSurface
-import com.example.ui.theme.PureWhite
-import com.example.ui.theme.SlateGray
+import com.example.ui.theme.SleekBg
+import com.example.ui.theme.SleekTextDark
+import com.example.ui.theme.SleekBrandPurple
+import com.example.ui.theme.SleekPurpleLightBg
+import com.example.ui.theme.SleekPurpleDarkText
+import com.example.ui.theme.SleekBlueLightBg
+import com.example.ui.theme.SleekBlueDarkText
+import com.example.ui.theme.SleekMapBg
+import com.example.ui.theme.SleekGrayBorder
+import com.example.ui.theme.SleekCardBorder
+import com.example.ui.theme.SleekAlertBg
+import com.example.ui.theme.SleekAlertText
+import com.example.ui.theme.SleekAlertBorder
+import com.example.ui.theme.SleekNavBarBg
+import com.example.ui.theme.SleekActivePill
 import java.util.Locale
 
 class MainActivity : ComponentActivity() {
@@ -126,55 +129,34 @@ fun TaxiAppMainScreen(viewModel: TaxiViewModel = viewModel()) {
     val activeDriver = drivers.find { d -> d.id == selectedDriverId }
     val activeCustomerTrip = trips.find { t -> t.id == activeCustomerTripId }
 
+    // Map the bottom padding of navigation bars automatically
+    val navigationPadding = WindowInsets.navigationBars.asPaddingValues()
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        containerColor = OffWhite,
-        bottomBar = {
-            NavigationBar(
-                containerColor = NavBg,
-                tonalElevation = 0.dp
-            ) {
-                val navItems = listOf(
-                    Triple("customer", "Rider", Icons.Default.Person),
-                    Triple("driver", "Driver", Icons.Default.Place),
-                    Triple("manager", "Admin", Icons.Default.Build),
-                )
-                navItems.forEach { (roleKey, label, icon) ->
-                    NavigationBarItem(
-                        icon = { Icon(icon, contentDescription = label) },
-                        label = { Text(label, fontWeight = FontWeight.Bold) },
-                        selected = activeRole == roleKey,
-                        onClick = { viewModel.setRole(roleKey) },
-                        colors = androidx.compose.material3.NavigationBarItemDefaults.colors(
-                            selectedIconColor = CharcoalDark,
-                            selectedTextColor = CharcoalDark,
-                            indicatorColor = TaxiYellow,
-                            unselectedIconColor = SlateGray,
-                            unselectedTextColor = SlateGray,
-                        )
-                    )
-                }
-            }
-        }
+        containerColor = SleekBg, // Soft Lavender-tinted White background
+        contentWindowInsets = WindowInsets.navigationBars
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
-                .background(OffWhite),
+                .padding(top = innerPadding.calculateTopPadding())
+                .background(SleekBg),
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
+            // Header: Application Logo and Dynamic Tag
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(OffWhite)
+                    .background(SleekBg)
                     .padding(horizontal = 20.dp, vertical = 14.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Column {
                     Text(
-                        text = "Gladbach Cab",
-                        color = CharcoalDark,
+                        text = "Dispatcher MG",
+                        color = SleekTextDark,
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = (-0.5).sp
@@ -185,12 +167,12 @@ fun TaxiAppMainScreen(viewModel: TaxiViewModel = viewModel()) {
                             modifier = Modifier
                                 .size(6.dp)
                                 .clip(CircleShape)
-                                .background(SuccessGreen)
+                                .background(Color(0xFF2E7D32)) // Pulsing center indicator green pulse style
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = "MÖNCHENGLADBACH CENTER",
-                            color = CharcoalDark.copy(alpha = 0.6f),
+                            color = SleekTextDark.copy(alpha = 0.6f),
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 0.5.sp
@@ -198,29 +180,31 @@ fun TaxiAppMainScreen(viewModel: TaxiViewModel = viewModel()) {
                     }
                 }
 
+                // Header Profile bubble representation (AD) from the design layout
                 Box(
                     modifier = Modifier
                         .size(48.dp)
                         .clip(CircleShape)
-                        .background(GrayBg)
+                        .background(SleekBlueLightBg)
                         .border(2.dp, Color.White, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = "AD",
-                        color = CharcoalDark,
+                        color = SleekBlueDarkText,
                         fontWeight = FontWeight.Bold,
                         fontSize = 15.sp
                     )
                 }
             }
 
+            // Central Mönchengladbach Map View
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(220.dp)
-                    .background(MapBg)
-                    .border(1.dp, BorderMedium)
+                    .background(SleekMapBg)
+                    .border(1.dp, SleekGrayBorder)
             ) {
                 MoenchengladbachMetroMap(
                     drivers = drivers,
@@ -229,18 +213,19 @@ fun TaxiAppMainScreen(viewModel: TaxiViewModel = viewModel()) {
                     pickupPlace = pickupPlace,
                     destPlace = destPlace
                 )
-
+                
+                // Overlay Badge - styled just like design HTML's bottom left overlay
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomStart)
                         .padding(12.dp)
                         .background(Color.White.copy(alpha = 0.9f), RoundedCornerShape(24.dp))
-                        .border(1.dp, BorderMedium, RoundedCornerShape(24.dp))
+                        .border(1.dp, SleekGrayBorder, RoundedCornerShape(24.dp))
                         .padding(horizontal = 12.dp, vertical = 6.dp)
                 ) {
                     Text(
                         text = "12 ACTIVE DRIVERS",
-                        color = CharcoalDark,
+                        color = SleekTextDark,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 0.5.sp
@@ -248,11 +233,57 @@ fun TaxiAppMainScreen(viewModel: TaxiViewModel = viewModel()) {
                 }
             }
 
+            // Role Navigation Pills Drawer (Sleek Bottom-like Material Navigation Bar Style)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(SleekNavBarBg)
+                    .border(BorderStroke(1.dp, SleekGrayBorder))
+                    .padding(vertical = 10.dp, horizontal = 12.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                val roles = listOf(
+                    Triple("customer", "👤 Rider View", "Customer Booking"),
+                    Triple("driver", "🚖 Driver Hub", "My Levels & Jobs"),
+                    Triple("manager", "⚙️ Dispatcher", "LEDGER MANAGER")
+                )
+                roles.forEach { (roleKey, label, desc) ->
+                    val isSelected = activeRole == roleKey
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(horizontal = 4.dp)
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(if (isSelected) SleekActivePill else Color.Transparent)
+                            .clickable { viewModel.setRole(roleKey) }
+                            .padding(vertical = 8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = label,
+                                color = if (isSelected) SleekBrandPurple else SleekTextDark.copy(alpha = 0.6f),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = desc,
+                                color = if (isSelected) SleekPurpleDarkText else SleekTextDark.copy(alpha = 0.4f),
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Body Area based on selected Role Drawer
             Box(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
-                    .background(OffWhite)
+                    .background(SleekBg)
             ) {
                 when (activeRole) {
                     "customer" -> CustomerScreen(
@@ -283,8 +314,8 @@ fun TaxiAppMainScreen(viewModel: TaxiViewModel = viewModel()) {
     if (xpCelebrationMsg != null) {
         Dialog(onDismissRequest = { viewModel.dismissCelebration() }) {
             Card(
-                colors = CardDefaults.cardColors(containerColor = CharcoalSurface),
-                border = BorderStroke(2.dp, TaxiYellow),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF1B1E22)),
+                border = BorderStroke(2.dp, Color(0xFFFFCC00)),
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier.padding(16.dp)
             ) {
@@ -292,7 +323,7 @@ fun TaxiAppMainScreen(viewModel: TaxiViewModel = viewModel()) {
                     modifier = Modifier.padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("🏆 LEVEL UP!", fontSize = 24.sp, fontWeight = FontWeight.Black, color = TaxiYellow)
+                    Text("🏆 LEVEL UP!", fontSize = 24.sp, fontWeight = FontWeight.Black, color = Color(0xFFFFCC00))
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         text = xpCelebrationMsg ?: "",
@@ -303,7 +334,7 @@ fun TaxiAppMainScreen(viewModel: TaxiViewModel = viewModel()) {
                     Spacer(modifier = Modifier.height(20.dp))
                     Button(
                         onClick = { viewModel.dismissCelebration() },
-                        colors = ButtonDefaults.buttonColors(containerColor = TaxiYellow),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFCC00)),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text("Awesome!", color = Color.Black, fontWeight = FontWeight.Bold)
@@ -403,23 +434,14 @@ fun MoenchengladbachMetroMap(
                 val startPt = Offset(getX(activeTrip.pickupLon), getY(activeTrip.pickupLat))
                 val endPt = Offset(getX(activeTrip.destLon), getY(activeTrip.destLat))
                 
-                val routeColor = if (activeTrip.status == "InProgress") TaxiYellow else TaxiYellowDark
+                // Pulsing Route path
                 drawLine(
-                    color = routeColor.copy(alpha = 0.3f),
+                    color = if (activeTrip.status == "InProgress") SleekBrandPurple else Color(0xFF006C4C),
                     start = startPt,
                     end = endPt,
-                    strokeWidth = 7f,
+                    strokeWidth = 5f,
+                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(15f, 15f), 0f)
                 )
-                drawLine(
-                    color = routeColor,
-                    start = startPt,
-                    end = endPt,
-                    strokeWidth = 4f,
-                )
-                val dirMid = Offset((startPt.x + endPt.x) / 2f, (startPt.y + endPt.y) / 2f)
-                val angle = kotlin.math.atan2((endPt.y - startPt.y).toDouble(), (endPt.x - startPt.x).toDouble()).toFloat()
-                drawCircle(routeColor, 5f, dirMid)
-                drawCircle(PureWhite, 2f, dirMid)
             }
 
             // 3. Draw static landmarks for visual placement anchor
@@ -436,7 +458,7 @@ fun MoenchengladbachMetroMap(
                     center = offset
                 )
                 drawCircle(
-                    color = TaxiYellow,
+                    color = SleekBrandPurple,
                     radius = 5f,
                     center = offset,
                     style = Stroke(2.5f)
@@ -464,12 +486,12 @@ fun MoenchengladbachMetroMap(
                 modifier = Modifier
                     .offset(px.dp - 30.dp, py.dp - 18.dp)
                     .background(Color.White.copy(alpha = 0.9f), RoundedCornerShape(4.dp))
-                    .border(1.dp, BorderMedium.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
+                    .border(1.dp, SleekGrayBorder.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
                     .padding(horizontal = 4.dp, vertical = 2.dp)
             ) {
                 Text(
                     text = name,
-                    color = CharcoalDark,
+                    color = SleekTextDark,
                     fontSize = 8.sp,
                     maxLines = 1,
                     fontWeight = FontWeight.Bold
@@ -489,7 +511,7 @@ fun MoenchengladbachMetroMap(
                 modifier = Modifier
                     .offset(pickX.dp - 10.dp, pickY.dp - 12.dp)
                     .size(20.dp)
-                    .background(TaxiYellow, CircleShape)
+                    .background(Color(0xFF006C4C), CircleShape)
                     .border(2.dp, Color.White, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
@@ -501,7 +523,7 @@ fun MoenchengladbachMetroMap(
                 modifier = Modifier
                     .offset(destX.dp - 10.dp, destY.dp - 12.dp)
                     .size(20.dp)
-                    .background(ErrorRed, CircleShape)
+                    .background(Color(0xFFB3261E), CircleShape)
                     .border(2.dp, Color.White, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
@@ -521,52 +543,26 @@ fun MoenchengladbachMetroMap(
                     .size(28.dp)
                     .clip(CircleShape)
                     .background(
-                        if (driver.isSuspended) AlertBg
-                        else if (driver.status == "Busy") YellowBg
-                        else if (isSelectedOnMap) YellowBg
+                        if (driver.isSuspended) SleekAlertBg
+                        else if (driver.status == "Busy") SleekPurpleLightBg
+                        else if (isSelectedOnMap) SleekPurpleLightBg
                         else Color.White
                     )
                     .border(
                         if (isSelectedOnMap) 2.dp else 1.dp,
-                        if (driver.isSuspended) ErrorRed
-                        else if (isSelectedOnMap || driver.status == "Available") TaxiYellow
-                        else BorderMedium,
+                        if (driver.isSuspended) SleekAlertText
+                        else if (isSelectedOnMap || driver.status == "Available") SleekBrandPurple
+                        else SleekGrayBorder,
                         CircleShape
                     )
                     .clickable { /* Choose map driver */ },
                 contentAlignment = Alignment.Center
             ) {
-                Canvas(modifier = Modifier.size(18.dp)) {
-                    val cx = size.width / 2
-                    val cy = size.height / 2
-                    if (driver.isSuspended) {
-                        drawLine(ErrorRed, Offset(cx - 5f, cy - 5f), Offset(cx + 5f, cy + 5f), strokeWidth = 3f)
-                        drawLine(ErrorRed, Offset(cx + 5f, cy - 5f), Offset(cx - 5f, cy + 5f), strokeWidth = 3f)
-                    } else if (driver.status == "Busy") {
-                        drawCircle(TaxiYellow, 7f, Offset(cx, cy))
-                        drawCircle(CharcoalDark, 3f, Offset(cx, cy - 2f))
-                        drawRect(CharcoalDark, Offset(cx - 4f, cy + 1f), androidx.compose.ui.geometry.Size(8f, 3f))
-                    } else {
-                        val bodyColor = if (isSelectedOnMap) TaxiYellow else CharcoalDark
-                        val path = androidx.compose.ui.graphics.Path().apply {
-                            moveTo(cx - 7f, cy - 3f)
-                            lineTo(cx - 5f, cy - 7f)
-                            lineTo(cx + 5f, cy - 7f)
-                            lineTo(cx + 7f, cy - 3f)
-                            lineTo(cx + 8f, cy - 1f)
-                            lineTo(cx + 8f, cy + 3f)
-                            lineTo(cx + 5f, cy + 3f)
-                            lineTo(cx + 4f, cy + 6f)
-                            lineTo(cx - 4f, cy + 6f)
-                            lineTo(cx - 5f, cy + 3f)
-                            lineTo(cx - 8f, cy + 3f)
-                            lineTo(cx - 8f, cy - 1f)
-                            close()
-                        }
-                        drawPath(path, bodyColor)
-                        drawCircle(PureWhite, 3f, Offset(cx - 4f, cy + 3f))
-                        drawCircle(PureWhite, 3f, Offset(cx + 4f, cy + 3f))
-                    }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = if (driver.isSuspended) "🚫" else if (driver.status == "Busy") "🔒" else "🚖",
+                        fontSize = 12.sp
+                    )
                 }
             }
 
@@ -575,12 +571,12 @@ fun MoenchengladbachMetroMap(
                 modifier = Modifier
                     .offset(dX.dp - 35.dp, dY.dp + 16.dp)
                     .background(Color.White.copy(alpha = 0.9f), RoundedCornerShape(4.dp))
-                    .border(1.dp, if (isSelectedOnMap) TaxiYellow else BorderMedium, RoundedCornerShape(4.dp))
+                    .border(1.dp, if (isSelectedOnMap) SleekBrandPurple else SleekGrayBorder, RoundedCornerShape(4.dp))
                     .padding(horizontal = 4.dp, vertical = 1.dp)
             ) {
                 Text(
                     text = "${driver.name.substringBefore(" ")} Lv.${driver.level}",
-                    color = if (driver.isSuspended) ErrorRed else CharcoalDark,
+                    color = if (driver.isSuspended) SleekAlertText else SleekTextDark,
                     fontSize = 8.sp,
                     maxLines = 1
                 )
@@ -610,8 +606,8 @@ fun CustomerScreen(
         // Customer Identity Config Card
         item {
             Card(
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
+                border = BorderStroke(1.dp, SleekCardBorder),
                 shape = RoundedCornerShape(20.dp),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -626,13 +622,13 @@ fun CustomerScreen(
                     Icon(
                         imageVector = Icons.Default.Person,
                         contentDescription = "Contact Info",
-                        tint = TaxiYellow,
+                        tint = SleekBrandPurple,
                         modifier = Modifier.size(32.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Rider Username", color = CharcoalDark.copy(alpha = 0.6f), fontSize = 11.sp, fontWeight = FontWeight.Medium)
-                        Text(customerName, color = CharcoalDark, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        Text("Rider Username", color = SleekTextDark.copy(alpha = 0.6f), fontSize = 11.sp, fontWeight = FontWeight.Medium)
+                        Text(customerName, color = SleekTextDark, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                     }
 
                     // Rename mini action
@@ -641,11 +637,11 @@ fun CustomerScreen(
                             val names = listOf("Markus", "Anja", "Frank", "Tanja", "Christian", "Stefanie")
                             viewModel.setCustomerName(names.random())
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = YellowBg),
+                        colors = ButtonDefaults.buttonColors(containerColor = SleekPurpleLightBg),
                         contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
                         modifier = Modifier.height(34.dp)
                     ) {
-                        Text("Change", color = CharcoalDark, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Text("Change", color = SleekPurpleDarkText, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -654,34 +650,33 @@ fun CustomerScreen(
         // Live Tracker View if active trip is outstanding
         if (activeTrip != null) {
             item {
-Card(
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                border = BorderStroke(1.5.dp, TaxiYellow),
-                shape = RoundedCornerShape(20.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "ACTIVE TRIP STATUS",
-                                color = TaxiYellow,
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    border = BorderStroke(1.5.dp, SleekBrandPurple),
+                    shape = RoundedCornerShape(20.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "ACTIVE TRIP STATUS",
+                                color = SleekBrandPurple,
                                 fontWeight = FontWeight.Black,
                                 fontSize = 11.sp,
                                 letterSpacing = 0.5.sp
                             )
                             Badge(
                                 containerColor = when (activeTrip.status) {
-                                    "Requested" -> TaxiAmber
-                                    "Accepted", "Arriving" -> TaxiYellow
-                                    "InProgress" -> TaxiYellow
-                                    else -> TaxiYellow
+                                    "Requested" -> Color(0xFFFFA000)
+                                    "Accepted", "Arriving" -> SleekBrandPurple
+                                    "InProgress" -> Color(0xFF006C4C)
+                                    else -> Color(0xFF006C4C)
                                 }
                             ) {
                                 Text(
@@ -703,27 +698,27 @@ Card(
                                 "InProgress" -> "In transit • En route to: ${activeTrip.destName}. Cash pay will clear on site."
                                 else -> "Completed! Thank you for riding Gladbach Cab."
                             },
-                            color = CharcoalDark,
+                            color = SleekTextDark,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.SemiBold
                         )
 
                         Spacer(modifier = Modifier.height(12.dp))
-                        HorizontalDivider(color = BorderLight.copy(alpha = 0.5f))
+                        HorizontalDivider(color = SleekCardBorder.copy(alpha = 0.5f))
                         Spacer(modifier = Modifier.height(12.dp))
 
                         // Trip Details
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                             Column {
-                                Text("Pickup Location", color = CharcoalDark.copy(alpha = 0.5f), fontSize = 10.sp, fontWeight = FontWeight.Medium)
-                                Text(activeTrip.pickupName, color = CharcoalDark, fontSize = 13.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+                                Text("Pickup Location", color = SleekTextDark.copy(alpha = 0.5f), fontSize = 10.sp, fontWeight = FontWeight.Medium)
+                                Text(activeTrip.pickupName, color = SleekTextDark, fontSize = 13.sp, fontWeight = FontWeight.Bold, maxLines = 1)
                             }
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                             Column {
-                                Text("Destination Location", color = CharcoalDark.copy(alpha = 0.5f), fontSize = 10.sp, fontWeight = FontWeight.Medium)
-                                Text(activeTrip.destName, color = CharcoalDark, fontSize = 13.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+                                Text("Destination Location", color = SleekTextDark.copy(alpha = 0.5f), fontSize = 10.sp, fontWeight = FontWeight.Medium)
+                                Text(activeTrip.destName, color = SleekTextDark, fontSize = 13.sp, fontWeight = FontWeight.Bold, maxLines = 1)
                             }
                         }
 
@@ -735,12 +730,12 @@ Card(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column {
-                                Text("Calculated Distance", color = CharcoalDark.copy(alpha = 0.5f), fontSize = 10.sp, fontWeight = FontWeight.Medium)
-                                Text(String.format(Locale.getDefault(), "%.2f km", activeTrip.distanceKm), color = CharcoalDark, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                                Text("Calculated Distance", color = SleekTextDark.copy(alpha = 0.5f), fontSize = 10.sp, fontWeight = FontWeight.Medium)
+                                Text(String.format(Locale.getDefault(), "%.2f km", activeTrip.distanceKm), color = SleekTextDark, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                             }
                             Column(horizontalAlignment = Alignment.End) {
-                                Text("German Site Fare", color = CharcoalDark.copy(alpha = 0.5f), fontSize = 10.sp, fontWeight = FontWeight.Medium)
-                                Text(String.format(Locale.getDefault(), "%.2f €", activeTrip.fareEuro), color = TaxiYellow, fontSize = 18.sp, fontWeight = FontWeight.Black)
+                                Text("German Site Fare", color = SleekTextDark.copy(alpha = 0.5f), fontSize = 10.sp, fontWeight = FontWeight.Medium)
+                                Text(String.format(Locale.getDefault(), "%.2f €", activeTrip.fareEuro), color = SleekBrandPurple, fontSize = 18.sp, fontWeight = FontWeight.Black)
                             }
                         }
 
@@ -749,18 +744,18 @@ Card(
                         if (activeTrip.status in listOf("Requested", "Accepted")) {
                             Button(
                                 onClick = { viewModel.customerCancelTrip() },
-                                colors = ButtonDefaults.buttonColors(containerColor = AlertBg),
-                                border = BorderStroke(1.dp, AlertBorder),
+                                colors = ButtonDefaults.buttonColors(containerColor = SleekAlertBg),
+                                border = BorderStroke(1.dp, SleekAlertBorder),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .testTag("cancel_ride_button")
                             ) {
-                                Text("Cancel Booking Request", color = ErrorRed, fontWeight = FontWeight.Bold)
+                                Text("Cancel Booking Request", color = SleekAlertText, fontWeight = FontWeight.Bold)
                             }
                         } else if (activeTrip.status == "Completed") {
                             Button(
                                 onClick = { viewModel.clearCustomerBookingState() },
-                                colors = ButtonDefaults.buttonColors(containerColor = TaxiYellow),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF006C4C)),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .testTag("payout_ok_button")
@@ -771,7 +766,7 @@ Card(
                             // Ride is in progress, can't cancel
                             Text(
                                 "⚠️ You are currently in transit. Ride cannot be cancelled.",
-                                color = TaxiAmber,
+                                color = Color(0xFFFFA000),
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.fillMaxWidth(),
@@ -786,14 +781,14 @@ Card(
             item {
                 Text(
                     text = "Request a Trip",
-                    color = CharcoalDark,
+                    color = SleekTextDark,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
 
                 // Select Pickup Address Chip list
-                Text("Select PICKUP Point (Station A):", color = TaxiYellow, fontSize = 11.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 6.dp))
+                Text("Select PICKUP Point (Station A):", color = SleekBrandPurple, fontSize = 11.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 6.dp))
                 LazyRow(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -803,10 +798,10 @@ Card(
                         val isSelected = pickupPlace.name == loc.name
                         Card(
                             colors = CardDefaults.cardColors(
-                                containerColor = if (isSelected) YellowBg else Color.White
+                                containerColor = if (isSelected) SleekPurpleLightBg else Color.White
                             ),
                             shape = RoundedCornerShape(16.dp),
-                            border = BorderStroke(1.dp, if (isSelected) TaxiYellow else BorderLight),
+                            border = BorderStroke(1.dp, if (isSelected) SleekBrandPurple else SleekCardBorder),
                             modifier = Modifier
                                 .padding(end = 8.dp)
                                 .clickable { viewModel.setPickup(loc) }
@@ -814,7 +809,7 @@ Card(
                             Text(
                                 text = "📍 " + loc.name.substringBefore(" ("),
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                                color = if (isSelected) CharcoalDark else CharcoalDark,
+                                color = if (isSelected) SleekPurpleDarkText else SleekTextDark,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -823,7 +818,7 @@ Card(
                 }
 
                 // Select Destination Address Chip list
-                Text("Select DESTINATION Point (Station B):", color = TaxiYellow, fontSize = 11.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 6.dp))
+                Text("Select DESTINATION Point (Station B):", color = SleekBrandPurple, fontSize = 11.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 6.dp))
                 LazyRow(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -833,10 +828,10 @@ Card(
                         val isSelected = destPlace.name == loc.name
                         Card(
                             colors = CardDefaults.cardColors(
-                                containerColor = if (isSelected) GrayBg else Color.White
+                                containerColor = if (isSelected) SleekBlueLightBg else Color.White
                             ),
                             shape = RoundedCornerShape(16.dp),
-                            border = BorderStroke(1.dp, if (isSelected) TaxiYellow else BorderLight),
+                            border = BorderStroke(1.dp, if (isSelected) SleekBrandPurple else SleekCardBorder),
                             modifier = Modifier
                                 .padding(end = 8.dp)
                                 .clickable { viewModel.setDestination(loc) }
@@ -844,7 +839,7 @@ Card(
                             Text(
                                 text = "🏁 " + loc.name.substringBefore(" ("),
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                                color = if (isSelected) CharcoalDark else CharcoalDark,
+                                color = if (isSelected) SleekBlueDarkText else SleekTextDark,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -854,9 +849,8 @@ Card(
 
                 // Selected Route Details Card
                 Card(
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.White),
-                    border = BorderStroke(1.dp, BorderLight),
+                    border = BorderStroke(1.dp, SleekCardBorder),
                     shape = RoundedCornerShape(20.dp),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -864,19 +858,19 @@ Card(
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.Place, contentDescription = null, tint = TaxiYellow, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Default.Place, contentDescription = null, tint = Color(0xFF006C4C), modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(text = "From: ${pickupPlace.name}", color = CharcoalDark, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                            Text(text = "From: ${pickupPlace.name}", color = SleekTextDark, fontSize = 13.sp, fontWeight = FontWeight.Medium)
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.Place, contentDescription = null, tint = ErrorRed, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Default.Place, contentDescription = null, tint = Color(0xFFB3261E), modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(text = "To: ${destPlace.name}", color = CharcoalDark, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                            Text(text = "To: ${destPlace.name}", color = SleekTextDark, fontSize = 13.sp, fontWeight = FontWeight.Medium)
                         }
 
                         Spacer(modifier = Modifier.height(12.dp))
-                        HorizontalDivider(color = BorderLight.copy(alpha = 0.5f))
+                        HorizontalDivider(color = SleekCardBorder.copy(alpha = 0.5f))
                         Spacer(modifier = Modifier.height(12.dp))
 
                         // Fare estimate structure
@@ -890,12 +884,12 @@ Card(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column {
-                                Text("Route Distance", color = CharcoalDark.copy(alpha = 0.5f), fontSize = 11.sp, fontWeight = FontWeight.Medium)
-                                Text(String.format(Locale.getDefault(), "%.2f km", distance), color = CharcoalDark, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                                Text("Route Distance", color = SleekTextDark.copy(alpha = 0.5f), fontSize = 11.sp, fontWeight = FontWeight.Medium)
+                                Text(String.format(Locale.getDefault(), "%.2f km", distance), color = SleekTextDark, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                             }
                             Column(horizontalAlignment = Alignment.End) {
-                                Text("Est. On-site Price", color = CharcoalDark.copy(alpha = 0.5f), fontSize = 11.sp, fontWeight = FontWeight.Medium)
-                                Text(String.format(Locale.getDefault(), "%.2f €", estFare), color = TaxiYellow, fontSize = 18.sp, fontWeight = FontWeight.Black)
+                                Text("Est. On-site Price", color = SleekTextDark.copy(alpha = 0.5f), fontSize = 11.sp, fontWeight = FontWeight.Medium)
+                                Text(String.format(Locale.getDefault(), "%.2f €", estFare), color = SleekBrandPurple, fontSize = 18.sp, fontWeight = FontWeight.Black)
                             }
                         }
 
@@ -903,18 +897,18 @@ Card(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(NavBg, RoundedCornerShape(12.dp))
-                                .border(1.dp, BorderLight.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
+                                .background(SleekNavBarBg, RoundedCornerShape(12.dp))
+                                .border(1.dp, SleekCardBorder.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
                                 .padding(10.dp),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text("💶 Payment Scheme:", color = CharcoalDark.copy(alpha = 0.6f), fontSize = 11.sp, fontWeight = FontWeight.Medium)
-                            Text("PAY ON SITE", color = TaxiYellow, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Text("💶 Payment Scheme:", color = SleekTextDark.copy(alpha = 0.6f), fontSize = 11.sp, fontWeight = FontWeight.Medium)
+                            Text("PAY ON SITE", color = Color(0xFF006C4C), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                         }
                         
                         Text(
                             text = "Note: In Mönchengladbach, Germany, taxis charge on arrival. The administration puts a 10% commission fee of ${String.format(Locale.getDefault(), "%.2f €", driverOwes)} to the driver's ledger on completed trips.",
-                            color = CharcoalDark.copy(alpha = 0.5f),
+                            color = SleekTextDark.copy(alpha = 0.5f),
                             fontSize = 9.sp,
                             modifier = Modifier.padding(top = 8.dp)
                         )
@@ -924,7 +918,7 @@ Card(
                 if (pickupPlace.name == destPlace.name) {
                     Text(
                         text = "⚠️ Pickup and Destination cannot be identical.",
-                        color = ErrorRed,
+                        color = Color(0xFFB3261E),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.fillMaxWidth(),
@@ -933,7 +927,7 @@ Card(
                 } else {
                     Button(
                         onClick = { viewModel.orderTaxi() },
-                        colors = ButtonDefaults.buttonColors(containerColor = TaxiYellow),
+                        colors = ButtonDefaults.buttonColors(containerColor = SleekBrandPurple),
                         shape = RoundedCornerShape(24.dp),
                         modifier = Modifier
                             .fillMaxWidth()
@@ -954,9 +948,8 @@ Card(
         // Active Nearby Drivers indicators
         item {
             Card(
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
-                border = BorderStroke(1.dp, BorderLight),
+                border = BorderStroke(1.dp, SleekCardBorder),
                 shape = RoundedCornerShape(20.dp),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -965,7 +958,7 @@ Card(
                 Column(modifier = Modifier.padding(14.dp)) {
                     Text(
                         text = "🟢 ACTIVE LOCAL TAXI CARRIERS",
-                        color = TaxiYellow,
+                        color = Color(0xFF006C4C),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Black,
                         letterSpacing = 0.5.sp
@@ -989,13 +982,13 @@ Card(
                                 Column {
                                     Text(
                                         text = "${driver.name} (Lvl ${driver.level} • ${driver.levelName})",
-                                        color = if (driver.isSuspended) ErrorRed else CharcoalDark,
+                                        color = if (driver.isSuspended) SleekAlertText else SleekTextDark,
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Bold
                                     )
                                     Text(
                                         text = "${driver.carModel} [${driver.carLicensePlate}]",
-                                        color = CharcoalDark.copy(alpha = 0.6f),
+                                        color = SleekTextDark.copy(alpha = 0.6f),
                                         fontSize = 10.sp
                                     )
                                 }
@@ -1004,21 +997,21 @@ Card(
                             Column(horizontalAlignment = Alignment.End) {
                                 Text(
                                     text = if (driver.isSuspended) "SUSPENDED" else driver.status.uppercase(Locale.getDefault()),
-                                    color = if (driver.isSuspended) ErrorRed
-                                    else if (driver.status == "Busy") TaxiAmber
-                                    else TaxiYellow,
+                                    color = if (driver.isSuspended) SleekAlertText
+                                    else if (driver.status == "Busy") Color(0xFFFFA000)
+                                    else Color(0xFF006C4C),
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
                                     text = String.format(Locale.getDefault(), "%.1f km away", distanceToPickup),
-                                    color = if (inCarrierRange) TaxiYellow else ErrorRed,
+                                    color = if (inCarrierRange) Color(0xFF006C4C) else SleekAlertText,
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Medium
                                 )
                             }
                         }
-                        HorizontalDivider(color = BorderLight.copy(alpha = 0.3f), thickness = 1.dp)
+                        HorizontalDivider(color = SleekCardBorder.copy(alpha = 0.3f), thickness = 1.dp)
                     }
                 }
             }
@@ -1055,7 +1048,7 @@ fun DriverScreen(
             ) {
                 Text(
                     text = "Select Active Driver Profile",
-                    color = CharcoalDark,
+                    color = SleekTextDark,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -1069,11 +1062,11 @@ fun DriverScreen(
                             viewModel.selectActiveDriver(drivers[nextIndex].id)
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = YellowBg),
+                    colors = ButtonDefaults.buttonColors(containerColor = SleekPurpleLightBg),
                     contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
                     modifier = Modifier.height(34.dp)
                 ) {
-                    Text("Cycle Profile 🔁", color = CharcoalDark, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text("Cycle Profile 🔁", color = SleekPurpleDarkText, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 }
             }
 
@@ -1087,26 +1080,26 @@ fun DriverScreen(
                     val isSelected = d.id == activeDriver?.id
                     Card(
                         colors = CardDefaults.cardColors(
-                            containerColor = if (isSelected) YellowBg else Color.White
+                            containerColor = if (isSelected) SleekPurpleLightBg else Color.White
                         ),
                         modifier = Modifier
                             .padding(end = 8.dp)
                             .clickable { viewModel.selectActiveDriver(d.id) },
-                        border = if (d.isSuspended) BorderStroke(1.dp, ErrorRed) 
-                                 else if (isSelected) BorderStroke(1.dp, TaxiYellow)
-                                 else BorderStroke(1.dp, BorderLight),
+                        border = if (d.isSuspended) BorderStroke(1.dp, SleekAlertText) 
+                                 else if (isSelected) BorderStroke(1.dp, SleekBrandPurple)
+                                 else BorderStroke(1.dp, SleekCardBorder),
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Column(modifier = Modifier.padding(10.dp)) {
                             Text(
                                 text = (if (d.isSuspended) "🚫 " else "") + d.name.substringBefore(" "),
-                                color = if (isSelected) CharcoalDark else CharcoalDark,
+                                color = if (isSelected) SleekPurpleDarkText else SleekTextDark,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 13.sp
                             )
                             Text(
                                 text = "Lvl ${d.level} • ${d.levelName}",
-                                color = if (isSelected) CharcoalDark.copy(alpha = 0.8f) else CharcoalDark.copy(alpha = 0.5f),
+                                color = if (isSelected) SleekPurpleDarkText.copy(alpha = 0.8f) else SleekTextDark.copy(alpha = 0.5f),
                                 fontSize = 10.sp
                             )
                         }
@@ -1119,13 +1112,13 @@ fun DriverScreen(
             item {
                 Card(
                     colors = CardDefaults.cardColors(containerColor = Color.White),
-                    border = BorderStroke(1.dp, BorderLight),
+                    border = BorderStroke(1.dp, SleekCardBorder),
                     shape = RoundedCornerShape(16.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
                         "Please select or register a driver below to enter the portal.",
-                        color = CharcoalDark,
+                        color = SleekTextDark,
                         modifier = Modifier.padding(16.dp),
                         textAlign = TextAlign.Center,
                         fontWeight = FontWeight.Medium
@@ -1137,8 +1130,8 @@ fun DriverScreen(
             if (activeDriver.isSuspended) {
                 item {
                     Card(
-                        colors = CardDefaults.cardColors(containerColor = AlertBg),
-                        border = BorderStroke(1.dp, AlertBorder),
+                        colors = CardDefaults.cardColors(containerColor = SleekAlertBg),
+                        border = BorderStroke(1.dp, SleekAlertBorder),
                         shape = RoundedCornerShape(16.dp),
                         modifier = Modifier
                             .fillMaxWidth()
@@ -1146,11 +1139,11 @@ fun DriverScreen(
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Warning, contentDescription = null, tint = ErrorRed)
+                                Icon(Icons.Default.Warning, contentDescription = null, tint = SleekAlertText)
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = "ACCOUNT SUSPENDED",
-                                    color = ErrorRed,
+                                    color = SleekAlertText,
                                     fontWeight = FontWeight.Black,
                                     fontSize = 14.sp
                                 )
@@ -1158,7 +1151,7 @@ fun DriverScreen(
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = "Dear ${activeDriver.name}, your account is suspended because you failed to clear your 10% agency dues of ${String.format(Locale.getDefault(), "%.2f €", activeDriver.dueCommission)} at the end of your 1-week service interval. Please pay outstanding dues below to resume service.",
-                                color = ErrorRed,
+                                color = SleekAlertText,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Medium
                             )
@@ -1170,9 +1163,8 @@ fun DriverScreen(
             // Driver Dashboard License Card
             item {
                 Card(
-                    elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.White),
-                    border = BorderStroke(1.5.dp, if (activeDriver.isSuspended) ErrorRed else TaxiYellow),
+                    border = BorderStroke(1.5.dp, if (activeDriver.isSuspended) SleekAlertText else SleekBrandPurple),
                     shape = RoundedCornerShape(20.dp),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -1185,10 +1177,10 @@ fun DriverScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column {
-                                Text("DRIVER LICENSE", color = TaxiYellow, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp)
-                                Text(activeDriver.name, color = CharcoalDark, fontSize = 18.sp, fontWeight = FontWeight.Black)
+                                Text("DRIVER LICENSE", color = SleekBrandPurple, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp)
+                                Text(activeDriver.name, color = SleekTextDark, fontSize = 18.sp, fontWeight = FontWeight.Black)
                             }
-                            Badge(containerColor = if (activeDriver.isSuspended) ErrorRed else TaxiYellow) {
+                            Badge(containerColor = if (activeDriver.isSuspended) SleekAlertText else Color(0xFF006C4C)) {
                                 Text(
                                     text = if (activeDriver.isSuspended) "SUSPENDED" else activeDriver.status.uppercase(Locale.getDefault()),
                                     color = Color.White,
@@ -1209,13 +1201,13 @@ fun DriverScreen(
                         ) {
                             Text(
                                 text = "EXP: Level ${activeDriver.level} (${activeDriver.levelName})",
-                                color = CharcoalDark,
+                                color = SleekTextDark,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
                                 text = "${activeDriver.xp} / ${activeDriver.xpNeededForNextLevel} XP",
-                                color = CharcoalDark.copy(alpha = 0.6f),
+                                color = SleekTextDark.copy(alpha = 0.6f),
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Medium
                             )
@@ -1223,8 +1215,8 @@ fun DriverScreen(
                         Spacer(modifier = Modifier.height(6.dp))
                         LinearProgressIndicator(
                             progress = activeDriver.levelProgress,
-                            color = TaxiYellow,
-                            trackColor = NavBg,
+                            color = SleekBrandPurple,
+                            trackColor = SleekNavBarBg,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(6.dp)
@@ -1235,7 +1227,7 @@ fun DriverScreen(
 
                         // Radiuses explanation
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.Info, contentDescription = null, tint = TaxiYellow, modifier = Modifier.size(14.dp))
+                            Icon(Icons.Default.Info, contentDescription = null, tint = SleekBrandPurple, modifier = Modifier.size(14.dp))
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = "Dispatch Radius Limit: ${activeDriver.maxSearchRadiusKm} km range • " + when (activeDriver.level) {
@@ -1244,36 +1236,36 @@ fun DriverScreen(
                                     3 -> "City Wide (Expert Level)"
                                     else -> "All Metro Mönchengladbach (Master)"
                                 },
-                                color = CharcoalDark.copy(alpha = 0.5f),
+                                color = SleekTextDark.copy(alpha = 0.5f),
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Medium
                             )
                         }
 
                         Spacer(modifier = Modifier.height(14.dp))
-                        HorizontalDivider(color = BorderLight.copy(alpha = 0.5f))
+                        HorizontalDivider(color = SleekCardBorder.copy(alpha = 0.5f))
                         Spacer(modifier = Modifier.height(14.dp))
 
                         // Financial values
                         Row(modifier = Modifier.fillMaxWidth()) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text("On-site Cash Earned", color = CharcoalDark.copy(alpha = 0.5f), fontSize = 11.sp, fontWeight = FontWeight.Medium)
-                                Text(String.format(Locale.getDefault(), "%.2f €", activeDriver.totalEarnings), color = CharcoalDark, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                                Text("On-site Cash Earned", color = SleekTextDark.copy(alpha = 0.5f), fontSize = 11.sp, fontWeight = FontWeight.Medium)
+                                Text(String.format(Locale.getDefault(), "%.2f €", activeDriver.totalEarnings), color = SleekTextDark, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                             }
                             Column(modifier = Modifier.weight(1f)) {
-                                Text("Owed Commission (10%)", color = CharcoalDark.copy(alpha = 0.5f), fontSize = 11.sp, fontWeight = FontWeight.Medium)
+                                Text("Owed Commission (10%)", color = SleekTextDark.copy(alpha = 0.5f), fontSize = 11.sp, fontWeight = FontWeight.Medium)
                                 Text(
                                     text = String.format(Locale.getDefault(), "%.2f €", activeDriver.dueCommission),
-                                    color = if (activeDriver.dueCommission > 0.0) ErrorRed else CharcoalDark,
+                                    color = if (activeDriver.dueCommission > 0.0) SleekAlertText else SleekTextDark,
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
                             Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
-                                Text("Days Left to Pay", color = CharcoalDark.copy(alpha = 0.5f), fontSize = 11.sp, fontWeight = FontWeight.Medium)
+                                Text("Days Left to Pay", color = SleekTextDark.copy(alpha = 0.5f), fontSize = 11.sp, fontWeight = FontWeight.Medium)
                                 Text(
                                     text = "${activeDriver.daysRemaining} Days",
-                                    color = if (activeDriver.daysRemaining <= 1) ErrorRed else TaxiYellow,
+                                    color = if (activeDriver.daysRemaining <= 1) SleekAlertText else SleekBrandPurple,
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -1283,7 +1275,7 @@ fun DriverScreen(
                         // Commission Clearing Payment section
                         if (activeDriver.dueCommission > 0.0) {
                             Spacer(modifier = Modifier.height(16.dp))
-                            HorizontalDivider(color = BorderLight.copy(alpha = 0.5f))
+                            HorizontalDivider(color = SleekCardBorder.copy(alpha = 0.5f))
                             Spacer(modifier = Modifier.height(12.dp))
                             
                             Row(
@@ -1293,13 +1285,13 @@ fun DriverScreen(
                             ) {
                                 Text(
                                     text = "Pay Outstanding 10% Dues",
-                                    color = CharcoalDark,
+                                    color = SleekTextDark,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                                 Button(
                                     onClick = { viewModel.driverPayCommission(activeDriver.dueCommission) },
-                                    colors = ButtonDefaults.buttonColors(containerColor = TaxiYellow),
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF006C4C)),
                                     modifier = Modifier.testTag("pay_commission_button")
                                 ) {
                                     Text("Pay ${String.format(Locale.getDefault(), "%.2f €", activeDriver.dueCommission)} Due", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
@@ -1316,7 +1308,7 @@ fun DriverScreen(
                 item {
                     Card(
                         colors = CardDefaults.cardColors(containerColor = Color.White),
-                        border = BorderStroke(1.5.dp, TaxiYellow),
+                        border = BorderStroke(1.5.dp, SleekBrandPurple),
                         shape = RoundedCornerShape(20.dp),
                         modifier = Modifier
                             .fillMaxWidth()
@@ -1325,7 +1317,7 @@ fun DriverScreen(
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(
                                 "🚀 ONGOING RIDE BOOKING",
-                                color = TaxiYellow,
+                                color = SleekBrandPurple,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
                                 letterSpacing = 0.5.sp
@@ -1333,19 +1325,19 @@ fun DriverScreen(
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = "Client: ${driverActiveTrip.customerName}",
-                                color = CharcoalDark,
+                                color = SleekTextDark,
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
                                 text = "Pickup: ${driverActiveTrip.pickupName}",
-                                color = CharcoalDark.copy(alpha = 0.6f),
+                                color = SleekTextDark.copy(alpha = 0.6f),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Medium
                             )
                             Text(
                                 text = "Dest: ${driverActiveTrip.destName}",
-                                color = CharcoalDark.copy(alpha = 0.6f),
+                                color = SleekTextDark.copy(alpha = 0.6f),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Medium
                             )
@@ -1354,8 +1346,8 @@ fun DriverScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text("MGM Contract Fare:", color = CharcoalDark.copy(alpha = 0.5f), fontSize = 11.sp)
-                                Text(String.format(Locale.getDefault(), "%.2f €", driverActiveTrip.fareEuro), color = TaxiYellow, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                                Text("MGM Contract Fare:", color = SleekTextDark.copy(alpha = 0.5f), fontSize = 11.sp)
+                                Text(String.format(Locale.getDefault(), "%.2f €", driverActiveTrip.fareEuro), color = SleekBrandPurple, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                             }
                             Spacer(modifier = Modifier.height(16.dp))
 
@@ -1364,7 +1356,7 @@ fun DriverScreen(
                                 "Accepted" -> {
                                     Button(
                                         onClick = { viewModel.advanceActiveTrip(driverActiveTrip.id, "Accepted") },
-                                        colors = ButtonDefaults.buttonColors(containerColor = TaxiYellow),
+                                        colors = ButtonDefaults.buttonColors(containerColor = SleekBrandPurple),
                                         shape = RoundedCornerShape(12.dp),
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
@@ -1374,7 +1366,7 @@ fun DriverScreen(
                                 "Arriving" -> {
                                     Button(
                                         onClick = { viewModel.advanceActiveTrip(driverActiveTrip.id, "Arriving") },
-                                        colors = ButtonDefaults.buttonColors(containerColor = TaxiYellow),
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF006C4C)),
                                         shape = RoundedCornerShape(12.dp),
                                         modifier = Modifier.fillMaxWidth()
                                         // Starts simulated trip driving on main thread
@@ -1385,7 +1377,7 @@ fun DriverScreen(
                                 "InProgress" -> {
                                     Button(
                                         onClick = { viewModel.advanceActiveTrip(driverActiveTrip.id, "InProgress") },
-                                        colors = ButtonDefaults.buttonColors(containerColor = TaxiYellow),
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF006C4C)),
                                         shape = RoundedCornerShape(12.dp),
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
@@ -1398,11 +1390,11 @@ fun DriverScreen(
                             Button(
                                 onClick = { viewModel.driverCancelTrip(driverActiveTrip.id) },
                                 colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                                border = BorderStroke(1.dp, ErrorRed),
+                                border = BorderStroke(1.dp, SleekAlertText),
                                 shape = RoundedCornerShape(12.dp),
                                 modifier = Modifier.fillMaxWidth()
                             ) {
-                                Text("Decline/Cancel Job", color = ErrorRed, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                                Text("Decline/Cancel Job", color = SleekAlertText, fontSize = 12.sp, fontWeight = FontWeight.Medium)
                             }
                         }
                     }
@@ -1412,7 +1404,7 @@ fun DriverScreen(
                 item {
                     Text(
                         text = "AVAILABLE DISPATCH JOBS",
-                        color = CharcoalDark,
+                        color = SleekTextDark,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(bottom = 12.dp)
@@ -1424,14 +1416,14 @@ fun DriverScreen(
                 if (activeDriver.isSuspended) {
                     item {
                         Card(
-                            colors = CardDefaults.cardColors(containerColor = AlertBg),
-                            border = BorderStroke(1.dp, AlertBorder),
+                            colors = CardDefaults.cardColors(containerColor = SleekAlertBg),
+                            border = BorderStroke(1.dp, SleekAlertBorder),
                             shape = RoundedCornerShape(16.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
                                 text = "🔒 DIAL dispatch is locked because your account is suspended. Please pay outstanding dues first.",
-                                color = ErrorRed,
+                                color = SleekAlertText,
                                 modifier = Modifier.padding(16.dp),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
@@ -1443,13 +1435,13 @@ fun DriverScreen(
                     item {
                         Card(
                             colors = CardDefaults.cardColors(containerColor = Color.White),
-                            border = BorderStroke(1.dp, BorderLight),
+                            border = BorderStroke(1.dp, SleekCardBorder),
                             shape = RoundedCornerShape(16.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
                                 text = "💤 No available passenger booking orders in the Mönchengladbach network. Go to Customer role and request a trip!",
-                                color = CharcoalDark.copy(alpha = 0.6f),
+                                color = SleekTextDark.copy(alpha = 0.6f),
                                 modifier = Modifier.padding(16.dp),
                                 fontSize = 12.sp,
                                 textAlign = TextAlign.Center,
@@ -1465,7 +1457,7 @@ fun DriverScreen(
 
                         Card(
                             colors = CardDefaults.cardColors(containerColor = Color.White),
-                            border = BorderStroke(1.dp, if (isWithinRange) TaxiYellow else BorderLight),
+                            border = BorderStroke(1.dp, if (isWithinRange) Color(0xFF006C4C) else SleekCardBorder),
                             shape = RoundedCornerShape(16.dp),
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -1477,21 +1469,21 @@ fun DriverScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text("Client: ${t.customerName}", color = CharcoalDark, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                                    Text("Client: ${t.customerName}", color = SleekTextDark, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                                     Text(
                                         text = String.format(Locale.getDefault(), "%.2f €", t.fareEuro),
-                                        color = TaxiYellow,
+                                        color = SleekBrandPurple,
                                         fontSize = 15.sp,
                                         fontWeight = FontWeight.Black
                                     )
                                 }
                                 
                                 Spacer(modifier = Modifier.height(4.dp))
-                                Text("Pickup: ${t.pickupName}", color = CharcoalDark.copy(alpha = 0.6f), fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                Text("Dest: ${t.destName}", color = CharcoalDark.copy(alpha = 0.6f), fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                Text("Pickup: ${t.pickupName}", color = SleekTextDark.copy(alpha = 0.6f), fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                Text("Dest: ${t.destName}", color = SleekTextDark.copy(alpha = 0.6f), fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
 
                                 Spacer(modifier = Modifier.height(8.dp))
-                                HorizontalDivider(color = BorderLight.copy(alpha = 0.5f))
+                                HorizontalDivider(color = SleekCardBorder.copy(alpha = 0.5f))
                                 Spacer(modifier = Modifier.height(8.dp))
 
                                 Row(
@@ -1500,10 +1492,10 @@ fun DriverScreen(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Column {
-                                        Text("Client Distance", color = CharcoalDark.copy(alpha = 0.5f), fontSize = 9.sp)
+                                        Text("Client Distance", color = SleekTextDark.copy(alpha = 0.5f), fontSize = 9.sp)
                                         Text(
                                             text = String.format(Locale.getDefault(), "%.2f km", distToPickup),
-                                            color = if (isWithinRange) CharcoalDark else ErrorRed,
+                                            color = if (isWithinRange) SleekTextDark else SleekAlertText,
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.Bold
                                         )
@@ -1512,7 +1504,7 @@ fun DriverScreen(
                                     if (isWithinRange) {
                                         Button(
                                             onClick = { viewModel.driverAcceptTrip(t.id) },
-                                            colors = ButtonDefaults.buttonColors(containerColor = TaxiYellow),
+                                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF006C4C)),
                                             contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
                                             modifier = Modifier.height(34.dp)
                                         ) {
@@ -1520,11 +1512,11 @@ fun DriverScreen(
                                         }
                                     } else {
                                         Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Icon(Icons.Default.Lock, contentDescription = null, tint = ErrorRed, modifier = Modifier.size(14.dp))
+                                            Icon(Icons.Default.Lock, contentDescription = null, tint = SleekAlertText, modifier = Modifier.size(14.dp))
                                             Spacer(modifier = Modifier.width(4.dp))
                                             Text(
                                                 text = "Far (" + String.format(Locale.getDefault(), "%.0f%% limit exceeded", (distToPickup / activeDriver.maxSearchRadiusKm - 1.0) * 100.0) + ")",
-                                                color = ErrorRed,
+                                                color = SleekAlertText,
                                                 fontSize = 11.sp,
                                                 fontWeight = FontWeight.Bold
                                             )
@@ -1536,7 +1528,7 @@ fun DriverScreen(
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
                                         text = "🔒 Requires Level ${if (distToPickup <= 6.0) 2 else if (distToPickup <= 12.0) 3 else 4} ${if (distToPickup <= 6.0) "(Experienced)" else if (distToPickup <= 12.0) "(Expert)" else "(Master)"} status. Current Level range limit is ${activeDriver.maxSearchRadiusKm} km.",
-                                        color = ErrorRed,
+                                        color = SleekAlertText,
                                         fontSize = 9.sp,
                                         fontWeight = FontWeight.Medium
                                     )
@@ -1550,12 +1542,12 @@ fun DriverScreen(
             // Driver Signup / Register custom driver
             item {
                 Spacer(modifier = Modifier.height(24.dp))
-                HorizontalDivider(color = BorderLight.copy(alpha = 0.5f))
+                HorizontalDivider(color = SleekCardBorder.copy(alpha = 0.5f))
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
                     text = "REGISTER NEW TAXI DRIVER",
-                    color = CharcoalDark,
+                    color = SleekTextDark,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 12.dp)
@@ -1563,7 +1555,7 @@ fun DriverScreen(
 
                 Card(
                     colors = CardDefaults.cardColors(containerColor = Color.White),
-                    border = BorderStroke(1.dp, BorderLight),
+                    border = BorderStroke(1.dp, SleekCardBorder),
                     shape = RoundedCornerShape(20.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -1574,12 +1566,12 @@ fun DriverScreen(
                             label = { Text("Driver Name") },
                             modifier = Modifier.fillMaxWidth(),
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = TaxiYellow,
-                                unfocusedBorderColor = BorderLight,
-                                focusedLabelColor = TaxiYellow,
-                                unfocusedLabelColor = CharcoalDark.copy(alpha = 0.6f),
-                                focusedTextColor = CharcoalDark,
-                                unfocusedTextColor = CharcoalDark
+                                focusedBorderColor = SleekBrandPurple,
+                                unfocusedBorderColor = SleekCardBorder,
+                                focusedLabelColor = SleekBrandPurple,
+                                unfocusedLabelColor = SleekTextDark.copy(alpha = 0.6f),
+                                focusedTextColor = SleekTextDark,
+                                unfocusedTextColor = SleekTextDark
                             )
                         )
                         Spacer(modifier = Modifier.height(8.dp))
@@ -1589,12 +1581,12 @@ fun DriverScreen(
                             label = { Text("Vehicle Spec (Mercedes E-Class)") },
                             modifier = Modifier.fillMaxWidth(),
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = TaxiYellow,
-                                unfocusedBorderColor = BorderLight,
-                                focusedLabelColor = TaxiYellow,
-                                unfocusedLabelColor = CharcoalDark.copy(alpha = 0.6f),
-                                focusedTextColor = CharcoalDark,
-                                unfocusedTextColor = CharcoalDark
+                                focusedBorderColor = SleekBrandPurple,
+                                unfocusedBorderColor = SleekCardBorder,
+                                focusedLabelColor = SleekBrandPurple,
+                                unfocusedLabelColor = SleekTextDark.copy(alpha = 0.6f),
+                                focusedTextColor = SleekTextDark,
+                                unfocusedTextColor = SleekTextDark
                             )
                         )
                         Spacer(modifier = Modifier.height(8.dp))
@@ -1604,19 +1596,19 @@ fun DriverScreen(
                             label = { Text("Germany License Plate (MG-XX-111)") },
                             modifier = Modifier.fillMaxWidth(),
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = TaxiYellow,
-                                unfocusedBorderColor = BorderLight,
-                                focusedLabelColor = TaxiYellow,
-                                unfocusedLabelColor = CharcoalDark.copy(alpha = 0.6f),
-                                focusedTextColor = CharcoalDark,
-                                unfocusedTextColor = CharcoalDark
+                                focusedBorderColor = SleekBrandPurple,
+                                unfocusedBorderColor = SleekCardBorder,
+                                focusedLabelColor = SleekBrandPurple,
+                                unfocusedLabelColor = SleekTextDark.copy(alpha = 0.6f),
+                                focusedTextColor = SleekTextDark,
+                                unfocusedTextColor = SleekTextDark
                             )
                         )
 
                         Spacer(modifier = Modifier.height(12.dp))
                         Button(
                             onClick = { viewModel.registerNewDriver() },
-                            colors = ButtonDefaults.buttonColors(containerColor = TaxiYellow),
+                            colors = ButtonDefaults.buttonColors(containerColor = SleekBrandPurple),
                             shape = RoundedCornerShape(12.dp),
                             modifier = Modifier.fillMaxWidth(),
                             enabled = newName.isNotBlank() && newCar.isNotBlank() && newPlate.isNotBlank()
@@ -1668,41 +1660,41 @@ fun AdminScreen(
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Card(
-                    colors = CardDefaults.cardColors(containerColor = CharcoalSurface),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1B1E22)),
                     modifier = Modifier
                         .weight(1f)
                         .padding(end = 6.dp)
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
-                        Text("Gross Revenue", color = SlateGray, fontSize = 10.sp)
+                        Text("Gross Revenue", color = Color(0xFF8899A6), fontSize = 10.sp)
                         Text(String.format(Locale.getDefault(), "%.2f €", totalRevenue), color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Black)
-                        Text("Completed: ${completedTrips.size} trips", color = SlateGray, fontSize = 8.sp)
+                        Text("Completed: ${completedTrips.size} trips", color = Color(0xFF637381), fontSize = 8.sp)
                     }
                 }
 
                 Card(
-                    colors = CardDefaults.cardColors(containerColor = CharcoalSurface),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1B1E22)),
                     modifier = Modifier
                         .weight(1f)
                         .padding(horizontal = 2.dp)
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
-                        Text("Ledger Dues", color = TaxiAmber, fontSize = 10.sp)
-                        Text(String.format(Locale.getDefault(), "%.2f €", outstandingCommission), color = TaxiYellow, fontSize = 14.sp, fontWeight = FontWeight.Black)
-                        Text("10% Gross Tax Outstanding", color = SlateGray, fontSize = 8.sp)
+                        Text("Ledger Dues", color = Color(0xFFFFA000), fontSize = 10.sp)
+                        Text(String.format(Locale.getDefault(), "%.2f €", outstandingCommission), color = Color(0xFFFFCC00), fontSize = 14.sp, fontWeight = FontWeight.Black)
+                        Text("10% Gross Tax Outstanding", color = Color(0xFF637381), fontSize = 8.sp)
                     }
                 }
 
                 Card(
-                    colors = CardDefaults.cardColors(containerColor = CharcoalSurface),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1B1E22)),
                     modifier = Modifier
                         .weight(1f)
                         .padding(start = 6.dp)
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
-                        Text("Commissions Clear", color = SuccessGreen, fontSize = 10.sp)
-                        Text(String.format(Locale.getDefault(), "%.2f €", commissionPaid), color = SuccessGreen, fontSize = 14.sp, fontWeight = FontWeight.Black)
-                        Text("Paid to Center", color = SlateGray, fontSize = 8.sp)
+                        Text("Commissions Clear", color = Color(0xFF2E7D32), fontSize = 10.sp)
+                        Text(String.format(Locale.getDefault(), "%.2f €", commissionPaid), color = Color(0xFF2E7D32), fontSize = 14.sp, fontWeight = FontWeight.Black)
+                        Text("Paid to Center", color = Color(0xFF637381), fontSize = 8.sp)
                     }
                 }
             }
@@ -1712,7 +1704,7 @@ fun AdminScreen(
         item {
             Card(
                 colors = CardDefaults.cardColors(containerColor = Color(0xFF1F2F20)),
-                border = BorderStroke(1.dp, SuccessGreen),
+                border = BorderStroke(1.dp, Color(0xFF2E7D32)),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 16.dp)
@@ -1734,7 +1726,7 @@ fun AdminScreen(
 
                     Button(
                         onClick = { viewModel.simulateNextDay() },
-                        colors = ButtonDefaults.buttonColors(containerColor = SuccessGreen),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
                         modifier = Modifier
                             .fillMaxWidth()
                             .testTag("simulate_time_button")
@@ -1758,8 +1750,8 @@ fun AdminScreen(
 
         items(drivers) { driver ->
             Card(
-                colors = CardDefaults.cardColors(containerColor = CharcoalSurface),
-                border = BorderStroke(1.dp, if (driver.isSuspended) ErrorRed else CharcoalSurface),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF1B1E22)),
+                border = BorderStroke(1.dp, if (driver.isSuspended) Color(0xFFD32F2F) else Color(0xFF2D3545)),
                 modifier = Modifier
                     .fillParentMaxWidth()
                     .padding(bottom = 8.dp)
@@ -1779,13 +1771,13 @@ fun AdminScreen(
                             )
                             Text(
                                 text = "Plate: ${driver.carLicensePlate} • XP: ${driver.xp}/100",
-                                color = SlateGray,
+                                color = Color(0xFF8899A6),
                                 fontSize = 10.sp
                             )
                         }
 
                         // Suspended Label Indicator
-                        Badge(containerColor = if (driver.isSuspended) ErrorRed else SuccessGreen) {
+                        Badge(containerColor = if (driver.isSuspended) Color(0xFFD32F2F) else Color(0xFF2E7D32)) {
                             Text(
                                 text = if (driver.isSuspended) "SUSPENDED" else driver.status.uppercase(Locale.getDefault()),
                                 color = Color.White,
@@ -1797,7 +1789,7 @@ fun AdminScreen(
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
-                    HorizontalDivider(color = CharcoalSurface)
+                    HorizontalDivider(color = Color(0xFF222830))
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Row(
@@ -1806,23 +1798,23 @@ fun AdminScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text("Driver Balance", color = SlateGray, fontSize = 10.sp)
+                            Text("Driver Balance", color = Color(0xFF8899A6), fontSize = 10.sp)
                             Text(String.format(Locale.getDefault(), "%.2f €", driver.totalEarnings), color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                         }
                         Column {
-                            Text("Outstanding Dues", color = SlateGray, fontSize = 10.sp)
+                            Text("Outstanding Dues", color = Color(0xFF8899A6), fontSize = 10.sp)
                             Text(
                                 text = String.format(Locale.getDefault(), "%.2f €", driver.dueCommission),
-                                color = if (driver.dueCommission > 0.0) ErrorRed else Color.White,
+                                color = if (driver.dueCommission > 0.0) Color(0xFFD32F2F) else Color.White,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold
                             )
                         }
                         Column {
-                            Text("Dues Deadline", color = SlateGray, fontSize = 10.sp)
+                            Text("Dues Deadline", color = Color(0xFF8899A6), fontSize = 10.sp)
                             Text(
                                 text = "${driver.daysRemaining} Days Left",
-                                color = if (driver.daysRemaining <= 1) ErrorRed else TaxiYellow,
+                                color = if (driver.daysRemaining <= 1) Color(0xFFD32F2F) else Color(0xFFFFCC00),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -1838,7 +1830,7 @@ fun AdminScreen(
                         if (driver.dueCommission > 0.0) {
                             Button(
                                 onClick = { viewModel.adminClearDriverCommision(driver.id) },
-                                colors = ButtonDefaults.buttonColors(containerColor = SuccessGreen),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
                                 contentPadding = PaddingValues(horizontal = 10.dp, vertical = 2.dp),
                                 modifier = Modifier
                                     .height(28.dp)
@@ -1851,7 +1843,7 @@ fun AdminScreen(
                         Button(
                             onClick = { viewModel.adminToggleLockState(driver.id) },
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = if (driver.isSuspended) TaxiAmber else ErrorRed
+                                containerColor = if (driver.isSuspended) Color(0xFFFFA000) else Color(0xFFD32F2F)
                             ),
                             contentPadding = PaddingValues(horizontal = 10.dp, vertical = 2.dp),
                             modifier = Modifier.height(28.dp)
@@ -1881,12 +1873,12 @@ fun AdminScreen(
 
             if (trips.isEmpty()) {
                 Card(
-                    colors = CardDefaults.cardColors(containerColor = CharcoalSurface),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1B1E22)),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
                         text = "No recorded trips in network DB.",
-                        color = SlateGray,
+                        color = Color(0xFF8899A6),
                         fontSize = 11.sp,
                         modifier = Modifier.padding(16.dp),
                         textAlign = TextAlign.Center
@@ -1897,7 +1889,7 @@ fun AdminScreen(
 
         items(trips) { trip ->
             Card(
-                colors = CardDefaults.cardColors(containerColor = CharcoalSurface),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF1B1E22)),
                 modifier = Modifier
                     .fillParentMaxWidth()
                     .padding(bottom = 6.dp)
@@ -1919,7 +1911,7 @@ fun AdminScreen(
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = "From ${trip.pickupName} to ${trip.destName}",
-                            color = SlateGray,
+                            color = Color(0xFF8899A6),
                             fontSize = 10.sp,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
@@ -1929,15 +1921,15 @@ fun AdminScreen(
                     Column(horizontalAlignment = Alignment.End, modifier = Modifier.padding(start = 8.dp)) {
                         Text(
                             text = String.format(Locale.getDefault(), "%.2f €", trip.fareEuro),
-                            color = TaxiYellow,
+                            color = Color(0xFFFFCC00),
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Black
                         )
                         Badge(
                             containerColor = when (trip.status) {
-                                "Completed" -> SuccessGreen
-                                "Cancelled" -> ErrorRed
-                                "Requested" -> TaxiAmber
+                                "Completed" -> Color(0xFF2E7D32)
+                                "Cancelled" -> Color(0xFFD32F2F)
+                                "Requested" -> Color(0xFFFFA000)
                                 else -> Color(0xFF1976D2)
                             }
                         ) {
@@ -1953,7 +1945,7 @@ fun AdminScreen(
             Spacer(modifier = Modifier.height(32.dp))
             Button(
                 onClick = { viewModel.resetEntireSystem() },
-                colors = ButtonDefaults.buttonColors(containerColor = ErrorRed),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)),
                 modifier = Modifier
                     .fillMaxWidth()
                     .testTag("admin_reset_button")

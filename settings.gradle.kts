@@ -22,6 +22,6 @@ dependencyResolutionManagement {
   }
 }
 
-rootProject.name = "GladbachCab"
+rootProject.name = "My Application"
 
 include(":app")
