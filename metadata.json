@@ -1,0 +1,6 @@
+{
+  "name": "Gladbach Cab",
+  "description": "Multi-role taxi platform in Mönchengladbach for Customers, Drivers, and Managers. Real-time ride tracking, driver levels and ranges, and earnings administration with automatic commissions.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
